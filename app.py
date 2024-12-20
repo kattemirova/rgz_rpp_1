@@ -11,7 +11,7 @@ db = SQLAlchemy()
 
 app = Flask(__name__)
 
-app.secret_key = "123"
+app.secret_key = os.environ.get('FLASK_SECRET_KEY')
 user_db = "postgres"
 host_ip = "127.0.0.1"
 host_port = "5432"
