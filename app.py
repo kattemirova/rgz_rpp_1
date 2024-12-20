@@ -69,6 +69,7 @@ def shorten_url():
     return render_template('index.html', short_url=short_url, error_message=error_message)
 
 
+
 @app.route('/<short_id_1>')
 @limiter.limit("100/day", error_message="В день доступно только 100 кликов по ссылке. Попробуйте завтра.")
 def redirect_to_url(short_id_1):
