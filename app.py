@@ -74,23 +74,21 @@ def shorten_url():
 @app.route('/<short_id_1>')
 @limiter.limit("100/day", error_message="В день доступно только 100 кликов по ссылке. Попробуйте завтра.")
 def redirect_to_url(short_id_1):
+    url = UrlDb.query.filter_by(short_id=short_id_1).first()
     cached_url = cache.get(short_id_1)
     if cached_url:
+        url.clicks += 1
+        db.session.commit() 
         return redirect(cached_url)
 
-    url = UrlDb.query.filter_by(short_id=short_id_1).first()
+   
 
-    ip_address = get_remote_address()
-    ip_addresses_str = url.ip_addresses or "" # Handle empty string case
+    ip_address = request.remote_addr
 
-    ip_addresses_set = set(ip_addresses_str.split(','))  # Convert to set for efficient lookup
-
-    if ip_address not in ip_addresses_set:
-        ip_addresses_set.add(ip_address)
-        new_ip_addresses_str = ",".join(ip_addresses_set) #Convert back to string
-        url.ip_addresses = new_ip_addresses_str
-
-
+    ip_addresses = url.ip_addresses if url.ip_addresses else ""
+    if ip_address not in ip_addresses.split(','):
+        ip_addresses += ',' + ip_address if ip_addresses else ip_address
+        url.ip_addresses = ip_addresses
 
     url.clicks += 1
     db.session.commit() 
