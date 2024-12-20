@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Сократить URL</h2>
+    <form method="post" action="/shorten">
+        URL: <input type="text" name="originalUrl"><br>
+        User ID: <input type="text" name="userId"><br>
+        <button type="submit">Сократить</button>
+    </form>
+    {% if short_url %}
+        <p>Сокращенная ссылка: <a href="{{ short_url }}" target="_blank">{{ short_url }}</a></p>
+    {% endif %}
+    {% if error_message %}
+        <p class="error">{{ error_message }}</p>
+    {% endif %}
+</body>
+</html>
