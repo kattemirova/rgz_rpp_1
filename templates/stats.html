@@ -2,18 +2,12 @@
 <html>
 <body>
     <h1>Статистика для короткой ссылки {{ short_id }}</h1>
-
     <p>Всего кликов: {{ clicks }}</p>
-
     <h2>Уникальные IP адреса:</h2>
-    <ul>
-    {% for ip in ip_addresses %}
-        <li>{{ ip }}</li>
-    {% endfor %}
-    </ul>
-
-    {% if error %}
-    <p style="color: red;">{{ error }}</p>
+    {% if ip_addresses %}
+        <p>{{ ip_addresses }}</p>
+    {% else %}
+        <p>Нет адресов</p>
     {% endif %}
 </body>
 </html>
