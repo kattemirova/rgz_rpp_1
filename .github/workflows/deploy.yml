@@ -1,0 +1,22 @@
+name: CI/CD for URL Shortener
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+      - name: Install bandit
+        run: pip install bandit
+      - name: bandit
+        run: bandit -r .
+          
