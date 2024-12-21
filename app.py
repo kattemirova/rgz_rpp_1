@@ -1,12 +1,10 @@
 import os
-from flask import Flask, request, redirect, jsonify, render_template
+from flask import Flask, request, redirect, render_template
 from flask_caching import Cache
 from flask_limiter import Limiter
 from flask_sqlalchemy import SQLAlchemy
 from flask_limiter.util import get_remote_address
 import shortuuid
-import psycopg2
-
 
 db = SQLAlchemy()
 
@@ -47,16 +45,14 @@ class UrlDb(db.Model):
 
 
 @app.route('/shorten', methods=['GET', 'POST'])
-@limiter.limit("10/day", error_message="В день доступно только 10 запросов. Попробуйте завтра.")
+@limiter.limit("5/day", error_message="В день доступно только 10 запросов. Попробуйте завтра.")
 def shorten_url():
     original_url = request.form.get('originalUrl')
     user_id = request.form.get('userId')
     error_message = None
     short_url = None
-
     if not original_url:
         error_message = "Введите ссылку"
-
     else:
         short_id = shortuuid.uuid()[:6]
         existing_url = UrlDb.query.filter_by(original_url=original_url).first()
@@ -66,10 +62,7 @@ def shorten_url():
             newURL = UrlDb(original_url=original_url, short_id=short_id, user_id=user_id)
             db.session.add(newURL)
             db.session.commit()
-
     return render_template('index.html', short_url=short_url, error_message=error_message)
-
-
 
 @app.route('/<short_id_1>')
 @limiter.limit("100/day", error_message="В день доступно только 100 кликов по ссылке. Попробуйте завтра.")
@@ -80,24 +73,17 @@ def redirect_to_url(short_id_1):
         url.clicks += 1
         db.session.commit() 
         return redirect(cached_url)
-
-   
-
     ip_address = request.remote_addr
-
     ip_addresses = url.ip_addresses if url.ip_addresses else ""
     if ip_address not in ip_addresses.split(','):
         ip_addresses += ',' + ip_address if ip_addresses else ip_address
         url.ip_addresses = ip_addresses
-
     url.clicks += 1
     db.session.commit() 
     cache.set(short_id_1, url.original_url)
     
     return redirect(url.original_url)
     
-
-
 @app.route('/stats/<short_id>')
 def get_stats(short_id):
     url = UrlDb.query.filter_by(short_id=short_id).first()
@@ -105,7 +91,5 @@ def get_stats(short_id):
         return render_template('stats.html', error='Такой короткой ссылки не существует')
     return render_template('stats.html', short_id=short_id, clicks=url.clicks, ip_addresses=url.ip_addresses)
 
-
-
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
